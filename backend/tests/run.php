@@ -68,6 +68,7 @@ $runner = new TestRunner();
 
 require __DIR__ . '/unit/ResponseShapeTest.php';
 require __DIR__ . '/unit/WxAuthLogicTest.php';
+require __DIR__ . '/unit/UserModelTest.php';
 require __DIR__ . '/unit/LedgerLogicTest.php';
 require __DIR__ . '/unit/LayeringRuleTest.php';
 require __DIR__ . '/unit/DatabaseScriptTest.php';
