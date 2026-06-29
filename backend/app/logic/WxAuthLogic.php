@@ -23,20 +23,20 @@ final class WxAuthLogic
 
     /**
      * @param UserModel|null $userModel 用户数据访问模型。
-     * @param string $tokenSecret token 签名密钥。
+     * @param string|null $tokenSecret token 签名密钥，默认读取 APP_SECRET。
      * @param string|null $wechatAppid 微信小程序 appid，默认读取 WECHAT_APPID。
      * @param string|null $wechatSecret 微信小程序 secret，默认读取 WECHAT_SECRET。
      * @param callable|null $httpClient HTTP GET 客户端，测试时可注入。
      */
     public function __construct(
         ?UserModel $userModel = null,
-        string $tokenSecret = 'local-dev-secret',
+        ?string $tokenSecret = null,
         ?string $wechatAppid = null,
         ?string $wechatSecret = null,
         ?callable $httpClient = null
     ) {
         $this->userModel = $userModel ?? new UserModel();
-        $this->tokenService = new \app\common\TokenService($tokenSecret);
+        $this->tokenService = new \app\common\TokenService($tokenSecret ?? (getenv('APP_SECRET') ?: 'local-dev-secret'));
         $this->wechatAppid = trim($wechatAppid ?? (getenv('WECHAT_APPID') ?: ''));
         $this->wechatSecret = trim($wechatSecret ?? (getenv('WECHAT_SECRET') ?: ''));
         $this->httpClient = $httpClient ?? [$this, 'httpGet'];

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use app\common\BusinessException;
 use app\common\ErrorCode;
+use app\common\TokenService;
 use app\logic\WxAuthLogic;
 
 $runner->test('wx login requires appid and secret for real code', function () use ($runner): void {
@@ -31,6 +32,25 @@ $runner->test('wx login resolves openid through code2session when configured', f
     $runner->assertTrue(strpos($calledUrl, 'appid=wx-appid') !== false, 'code2session url should include appid');
     $runner->assertTrue(strpos($calledUrl, 'secret=wx-secret') !== false, 'code2session url should include secret');
     $runner->assertTrue(strpos($calledUrl, 'js_code=real-code') !== false, 'code2session url should include login code');
+});
+
+$runner->test('wx login default token secret follows app secret environment', function () use ($runner): void {
+    $previousSecret = getenv('APP_SECRET');
+    putenv('APP_SECRET=production-token-secret');
+
+    try {
+        $logic = new WxAuthLogic();
+        $result = $logic->loginByCode('mock_env_secret_user');
+        $userId = (new TokenService('production-token-secret'))->parse($result['token']);
+
+        $runner->assertTrue($userId > 0, 'token signed by default WxAuthLogic should be parsed with APP_SECRET');
+    } finally {
+        if ($previousSecret === false) {
+            putenv('APP_SECRET');
+        } else {
+            putenv('APP_SECRET=' . $previousSecret);
+        }
+    }
 });
 
 $runner->test('wx login explains invalid code from code2session', function () use ($runner): void {
