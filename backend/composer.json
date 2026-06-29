@@ -1,0 +1,17 @@
+{
+  "name": "mengmeng/ledger-api",
+  "description": "萌萌记账微信小程序 ThinkPHP 6 API 骨架",
+  "type": "project",
+  "require": {
+    "php": ">=7.4",
+    "topthink/framework": "^6.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "app\\": "app/"
+    }
+  },
+  "scripts": {
+    "test": "php tests/run.php"
+  }
+}
