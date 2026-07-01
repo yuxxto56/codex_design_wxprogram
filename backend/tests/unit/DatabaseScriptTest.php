@@ -25,3 +25,14 @@ $runner->test('database error classifier explains refused connection in Chinese 
 
     $runner->assertSame('端口未开放或服务拒绝连接', classify_pdo_error($error));
 });
+
+$runner->test('database scripts include user category migration fields', function () use ($runner): void {
+    $root = dirname(__DIR__, 2);
+    $schemaContent = file_get_contents($root . '/database/schema.sql') ?: '';
+    $initContent = file_get_contents($root . '/scripts/init_database.php') ?: '';
+
+    $runner->assertTrue(strpos($schemaContent, '`user_id` INT(10) UNSIGNED NOT NULL DEFAULT 0') !== false, 'categories schema should include user_id');
+    $runner->assertTrue(strpos($schemaContent, 'idx_user_type_status_sort') !== false, 'categories schema should include user/type/status/sort index');
+    $runner->assertTrue(strpos($initContent, 'ensure_category_user_columns') !== false, 'init script should run idempotent category user migration');
+    $runner->assertTrue(strpos($initContent, 'idx_user_type_status_sort') !== false, 'init script should ensure custom category index');
+});

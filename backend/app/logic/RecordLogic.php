@@ -8,6 +8,8 @@ use app\common\ErrorCode;
 use app\common\Money;
 use app\model\CategoryModel;
 use app\model\RecordModel;
+use DateTimeImmutable;
+use DateTimeZone;
 
 /**
  * 账单记录业务逻辑。
@@ -99,11 +101,33 @@ final class RecordLogic
     {
         $groups = [];
         foreach ($this->recordModel->listByMonth($userId, $month) as $record) {
-            $day = date('Y-m-d', (int)$record['happened_at']);
+            $day = (new DateTimeImmutable('@' . (int)$record['happened_at']))
+                ->setTimezone(new DateTimeZone('Asia/Shanghai'))
+                ->format('Y-m-d');
             $groups[$day][] = $record;
         }
 
         return ['month' => $month, 'groups' => $groups];
+    }
+
+    /**
+     * 获取当前用户最新有记录的月份。
+     *
+     * @param int $userId 用户 ID。
+     * @return array 最新月份，month 为空字符串表示暂无记录。
+     */
+    public function latestMonth(int $userId): array
+    {
+        $latestHappenedAt = $this->recordModel->latestHappenedAtByUser($userId);
+        if ($latestHappenedAt <= 0) {
+            return ['month' => ''];
+        }
+
+        $month = (new DateTimeImmutable('@' . $latestHappenedAt))
+            ->setTimezone(new DateTimeZone('Asia/Shanghai'))
+            ->format('Y-m');
+
+        return ['month' => $month];
     }
 
     /**
@@ -120,7 +144,7 @@ final class RecordLogic
         if (!in_array($type, [RecordModel::TYPE_EXPENSE, RecordModel::TYPE_INCOME], true)) {
             throw new BusinessException(ErrorCode::PARAM_INVALID, '收支类型错误');
         }
-        if ($this->categoryModel->findByIdAndType($categoryId, $type) === null) {
+        if ($this->categoryModel->findByIdAndType($categoryId, $type, $userId) === null) {
             throw new BusinessException(ErrorCode::PARAM_INVALID, '分类不存在');
         }
 

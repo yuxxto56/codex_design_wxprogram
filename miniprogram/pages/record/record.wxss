@@ -1,0 +1,261 @@
+.type-switch {
+  width: 304rpx;
+  display: flex;
+  padding: 8rpx;
+  margin: 18rpx auto 34rpx;
+  border-radius: 999rpx;
+  background: #efeeea;
+}
+
+.type-item {
+  flex: 1;
+  height: 76rpx;
+  line-height: 76rpx;
+  text-align: center;
+  border-radius: 999rpx;
+  color: #5e4d50;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.type-item.active {
+  color: #fff;
+  background: #945466;
+  box-shadow: 0 8rpx 18rpx rgba(148, 84, 102, 0.22);
+}
+
+.amount-box {
+  position: relative;
+  margin: 0 0 46rpx;
+  padding: 56rpx 42rpx 44rpx;
+  text-align: center;
+  border-radius: 34rpx;
+  background: #f8dadd;
+  box-shadow: 0 18rpx 40rpx rgba(148, 84, 102, 0.08);
+}
+
+.amount-tape {
+  right: 38rpx;
+  top: -18rpx;
+}
+
+.amount {
+  color: #2f2929;
+  font-size: 72rpx;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.hint,
+.section-label {
+  color: #6f5e61;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28rpx 18rpx;
+  margin-top: 24rpx;
+}
+
+.category {
+  padding: 4rpx 0;
+  text-align: center;
+  color: #514345;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.category.selected {
+  color: #8f4e61;
+  transform: translateY(-2rpx);
+}
+
+.category-icon {
+  width: 82rpx;
+  height: 82rpx;
+  margin: 0 auto 12rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 -4rpx 0 rgba(0, 0, 0, 0.04);
+}
+
+.category.selected .category-icon {
+  outline: 5rpx solid rgba(148, 84, 102, 0.2);
+}
+
+.category-icon-img {
+  width: 44rpx;
+  height: 44rpx;
+}
+
+.more-category {
+  color: #6f5e61;
+}
+
+.more-icon {
+  display: grid;
+  grid-template-columns: repeat(3, 8rpx);
+  grid-template-rows: repeat(3, 8rpx);
+  gap: 6rpx;
+  place-content: center;
+  align-items: center;
+  justify-items: center;
+  background: #ffffff;
+}
+
+.more-icon text {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #94898b;
+}
+
+.date-time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+  margin-top: 36rpx;
+}
+
+.date-time-pill {
+  height: 72rpx;
+  border-radius: 999rpx;
+  background: #fff;
+  color: #5e4d50;
+  line-height: 72rpx;
+  text-align: center;
+  font-size: 24rpx;
+  font-weight: 800;
+  box-shadow: 0 10rpx 24rpx rgba(103, 82, 76, 0.05);
+}
+
+.remark-input {
+  height: 76rpx;
+  margin-top: 22rpx;
+  padding: 0 28rpx;
+  border-radius: 999rpx;
+  background: #f8e5e6;
+  color: #7b6268;
+  font-size: 26rpx;
+}
+
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18rpx;
+  margin-top: 82rpx;
+}
+
+.keyboard button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  height: 84rpx;
+  margin: 0;
+  padding: 0;
+  border-radius: 999rpx;
+  background: #fff;
+  color: #4b4042;
+  line-height: normal;
+  font-weight: 800;
+  box-shadow: 0 10rpx 24rpx rgba(103, 82, 76, 0.05);
+}
+
+.keyboard button::after {
+  border: 0;
+}
+
+.keyboard .delete-key {
+  color: #d33f3f;
+  font-size: 26rpx;
+}
+
+.save-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 292rpx;
+  height: 92rpx;
+  margin: 30rpx auto 0;
+  padding: 0;
+  border-radius: 999rpx;
+  color: #fff;
+  background: #945466;
+  font-weight: 800;
+  line-height: normal;
+  box-shadow: 0 14rpx 26rpx rgba(148, 84, 102, 0.22);
+}
+
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.modal-card {
+  width: 100%;
+  padding: 42rpx 36rpx 60rpx;
+  border-radius: 42rpx 42rpx 0 0;
+  background: #fbf9f5;
+  box-sizing: border-box;
+}
+
+.modal-title {
+  color: #2f2929;
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.modal-input {
+  height: 78rpx;
+  margin-top: 28rpx;
+  padding: 0 28rpx;
+  border-radius: 24rpx;
+  background: #fff;
+  color: #514345;
+  font-size: 28rpx;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+  margin-top: 28rpx;
+}
+
+.modal-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 82rpx;
+  margin: 0;
+  padding: 0;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: normal;
+}
+
+.modal-actions button::after {
+  border: 0;
+}
+
+.modal-secondary {
+  color: #6f5e61;
+  background: #efeeea;
+}
+
+.modal-primary {
+  color: #fff;
+  background: #945466;
+}

@@ -1,0 +1,301 @@
+.month-card {
+  position: relative;
+  margin-top: 20rpx;
+  padding: 56rpx 32rpx 36rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.9);
+  border-radius: 38rpx;
+  background: rgba(255, 255, 255, 0.72);
+  text-align: center;
+  box-shadow: 0 18rpx 44rpx rgba(103, 82, 76, 0.08);
+}
+
+.ribbon {
+  position: absolute;
+  top: -2rpx;
+  left: 50%;
+  width: 136rpx;
+  height: 24rpx;
+  transform: translateX(-50%);
+  background: repeating-linear-gradient(90deg, #ffa6b7 0 16rpx, #f8dadd 16rpx 28rpx);
+}
+
+.month-label {
+  color: #9a5362;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.month-note {
+  display: inline-block;
+  margin-top: 10rpx;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  background: #fff7df;
+  color: #8a6b22;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.month-title {
+  margin-top: 12rpx;
+  color: #864e5a;
+  font-size: 62rpx;
+  font-weight: 800;
+}
+
+.compare-pill {
+  display: inline-block;
+  margin-top: 14rpx;
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  background: #d8f0ec;
+  color: #426562;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.month-picker {
+  display: inline-block;
+  margin-top: 20rpx;
+  padding: 12rpx 28rpx;
+  border-radius: 999rpx;
+  background: #d8f0ec;
+  color: #426562;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.empty {
+  margin-top: 32rpx;
+  padding: 36rpx;
+  border-radius: 36rpx;
+  background: #fff;
+  color: #837375;
+  text-align: center;
+}
+
+.day-group {
+  margin-top: 34rpx;
+}
+
+.day-title {
+  margin: 0 0 18rpx 8rpx;
+  color: #864e5a;
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.bill-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18rpx;
+  padding: 24rpx;
+  border-radius: 32rpx;
+  background: #fff;
+  box-shadow: 0 12rpx 34rpx rgba(103, 82, 76, 0.05);
+}
+
+.bill-icon {
+  width: 74rpx;
+  height: 74rpx;
+  border-radius: 50%;
+  background: #acd2ce;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bill-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.bill-main {
+  flex: 1;
+  margin-left: 22rpx;
+}
+
+.bill-title {
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.bill-sub {
+  margin-top: 6rpx;
+  color: #837375;
+  font-size: 24rpx;
+}
+
+.bill-money {
+  color: #864e5a;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.bill-money.income {
+  color: #426562;
+}
+
+.detail-mask {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.24);
+  z-index: 20;
+}
+
+.detail-card {
+  width: 100%;
+  padding: 44rpx 36rpx 64rpx;
+  border-radius: 44rpx 44rpx 0 0;
+  background: #fbf9f5;
+  box-sizing: border-box;
+}
+
+.detail-title {
+  margin-bottom: 28rpx;
+  font-size: 36rpx;
+  font-weight: 800;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #e4e2de;
+  color: #514345;
+}
+
+.detail-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+  margin-top: 32rpx;
+}
+
+.detail-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 82rpx;
+  margin: 0;
+  padding: 0;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: normal;
+}
+
+.detail-actions button::after {
+  border: 0;
+}
+
+.edit-button {
+  color: #fff;
+  background: #945466;
+}
+
+.delete-button {
+  color: #fff;
+  background: #ba1a1a;
+}
+
+.cancel-button {
+  color: #6f5e61;
+  background: #efeeea;
+}
+
+.edit-type-switch {
+  width: 304rpx;
+  display: flex;
+  padding: 8rpx;
+  margin: 0 auto 24rpx;
+  border-radius: 999rpx;
+  background: #efeeea;
+}
+
+.edit-type-item {
+  flex: 1;
+  height: 68rpx;
+  border-radius: 999rpx;
+  color: #5e4d50;
+  line-height: 68rpx;
+  text-align: center;
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.edit-type-item.active {
+  color: #fff;
+  background: #945466;
+}
+
+.edit-input {
+  height: 76rpx;
+  margin-top: 18rpx;
+  padding: 0 24rpx;
+  border-radius: 24rpx;
+  background: #fff;
+  color: #514345;
+  font-size: 28rpx;
+}
+
+.edit-date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+  margin-top: 18rpx;
+}
+
+.edit-date-pill {
+  height: 72rpx;
+  border-radius: 24rpx;
+  background: #fff;
+  color: #5e4d50;
+  line-height: 72rpx;
+  text-align: center;
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.edit-category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  margin-top: 22rpx;
+}
+
+.edit-category {
+  min-width: 108rpx;
+  padding: 14rpx 20rpx;
+  border-radius: 999rpx;
+  background: #fff;
+  color: #514345;
+  text-align: center;
+  font-size: 24rpx;
+  font-weight: 800;
+  box-sizing: border-box;
+}
+
+.edit-category.selected {
+  color: #fff;
+  background: #945466;
+}
+
+.float-add {
+  position: fixed;
+  right: 34rpx;
+  bottom: 152rpx;
+  z-index: 9;
+  width: 92rpx;
+  height: 92rpx;
+  border-radius: 50%;
+  background: #945466;
+  color: #fff;
+  line-height: 86rpx;
+  text-align: center;
+  font-size: 54rpx;
+  font-weight: 700;
+  box-shadow: 0 18rpx 32rpx rgba(148, 84, 102, 0.28);
+}

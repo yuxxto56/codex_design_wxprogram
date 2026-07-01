@@ -10,7 +10,7 @@ use Throwable;
 /**
  * 用户 API 控制器。
  *
- * 提供当前登录用户资料查询接口。
+ * 提供当前登录用户资料查询和保存接口。
  */
 final class UserController extends BaseController
 {
@@ -30,6 +30,33 @@ final class UserController extends BaseController
     {
         try {
             return $this->success($this->logic->profile($this->currentUserId()));
+        } catch (Throwable $exception) {
+            return $this->fail($exception);
+        }
+    }
+
+    /**
+     * 保存当前用户昵称和头像。
+     */
+    public function saveProfile(): array
+    {
+        try {
+            return $this->success($this->logic->saveProfile($this->currentUserId(), [
+                'nickname' => $this->postRequiredString('nickname'),
+                'avatar' => $this->postOptionalString('avatar'),
+            ]));
+        } catch (Throwable $exception) {
+            return $this->fail($exception);
+        }
+    }
+
+    /**
+     * 上传并保存当前用户头像。
+     */
+    public function uploadAvatar(): array
+    {
+        try {
+            return $this->success($this->logic->uploadAvatar($this->currentUserId(), $this->uploadedFile('avatar')));
         } catch (Throwable $exception) {
             return $this->fail($exception);
         }

@@ -93,6 +93,7 @@ function base_status(array $config): array
         'seed_ready' => false,
         'tables' => [],
         'category_count' => 0,
+        'category_schema_ready' => false,
         'error_type' => '',
         'error_message' => '',
     ];
@@ -110,16 +111,21 @@ function inspect_database(PDO $pdo): array
 
     $missing = array_values(array_diff(required_tables(), $tables));
     $categoryCount = 0;
+    $categorySchemaReady = false;
     if (in_array('categories', $tables, true)) {
         $categoryCount = (int)$pdo->query('SELECT COUNT(*) FROM `categories`')->fetchColumn();
+        $hasUserId = $pdo->query("SHOW COLUMNS FROM `categories` LIKE 'user_id'")->fetchAll() !== [];
+        $hasUserIndex = $pdo->query("SHOW INDEX FROM `categories` WHERE Key_name = 'idx_user_type_status_sort'")->fetchAll() !== [];
+        $categorySchemaReady = $hasUserId && $hasUserIndex;
     }
 
     return [
         'tables' => $tables,
         'missing_tables' => $missing,
         'category_count' => $categoryCount,
-        'tables_ready' => $missing === [],
-        'seed_ready' => $categoryCount === 8,
+        'category_schema_ready' => $categorySchemaReady,
+        'tables_ready' => $missing === [] && $categorySchemaReady,
+        'seed_ready' => $categoryCount >= 8,
     ];
 }
 

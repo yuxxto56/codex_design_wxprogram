@@ -10,7 +10,7 @@ use app\model\UserModel;
 /**
  * 微信登录业务逻辑。
  *
- * 支持 mock_ 开头的开发 code；真实微信 code 会通过微信 code2Session 解析 openid。
+ * 通过微信 code2Session 解析 openid，并签发业务 token。
  */
 final class WxAuthLogic
 {
@@ -45,7 +45,7 @@ final class WxAuthLogic
     /**
      * 使用小程序登录 code 完成登录。
      *
-     * @param string $code wx.login 返回的 code，开发环境可传 mock_xxx。
+     * @param string $code wx.login 返回的 code。
      * @return array{token:string,user:array}
      */
     public function loginByCode(string $code): array
@@ -66,17 +66,13 @@ final class WxAuthLogic
     /**
      * 将登录 code 解析为 openid。
      *
-     * mock_ code 用于本地开发；真实 code 通过微信 jscode2session 换取 openid。
+     * 真实 code 通过微信 jscode2session 换取 openid。
      *
      * @param string $code 小程序登录 code。
      * @return string openid。
      */
     private function resolveOpenid(string $code): string
     {
-        if (strpos($code, 'mock_') === 0) {
-            return 'openid_' . substr($code, 5);
-        }
-
         if ($this->wechatAppid === '' || $this->wechatSecret === '' || $this->wechatAppid === 'your-wechat-mini-program-appid' || $this->wechatSecret === 'your-wechat-mini-program-secret') {
             throw new BusinessException(ErrorCode::WX_LOGIN_FAILED, '请配置 WECHAT_APPID 和 WECHAT_SECRET 后再使用微信一键登录');
         }

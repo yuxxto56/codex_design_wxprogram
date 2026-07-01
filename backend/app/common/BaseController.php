@@ -16,6 +16,7 @@ class BaseController
 {
     protected array $query = [];
     protected array $body = [];
+    protected array $files = [];
     protected int $userId = 0;
 
     /**
@@ -33,6 +34,18 @@ class BaseController
         $this->query = $query;
         $this->body = $body;
         $this->userId = $userId;
+    }
+
+    /**
+     * 注入上传文件上下文。
+     *
+     * 本地入口和测试可注入 $_FILES 结构，业务 Controller 通过 uploadedFile() 逐个读取。
+     *
+     * @param array $files 上传文件数组。
+     */
+    public function setUploadedFiles(array $files): void
+    {
+        $this->files = $files;
     }
 
     /**
@@ -89,7 +102,7 @@ class BaseController
     /**
      * 从 GET query 中读取必填字符串参数。
      *
-     * 正式 TP6 环境优先使用 Request::get()；本地 mock/测试环境回退到注入的 query。
+     * 正式 TP6 环境优先使用 Request::get()；本地/测试环境回退到注入的 query。
      *
      * @param string $key 参数名。
      */
@@ -101,7 +114,7 @@ class BaseController
     /**
      * 从 POST body 中读取必填字符串参数。
      *
-     * 正式 TP6 环境优先使用 Request::post()；本地 mock/测试环境回退到注入的 body。
+     * 正式 TP6 环境优先使用 Request::post()；本地/测试环境回退到注入的 body。
      *
      * @param string $key 参数名。
      */
@@ -176,6 +189,58 @@ class BaseController
     protected function postInt(string $key, int $default = 0): int
     {
         return (int)$this->postValue($key, $default);
+    }
+
+    /**
+     * 读取上传文件。
+     *
+     * @param string $key 文件字段名。
+     * @return array 上传文件结构。
+     */
+    protected function uploadedFile(string $key): array
+    {
+        if (class_exists(Request::class)) {
+            try {
+                $file = Request::file($key);
+                if (is_array($file)) {
+                    return $file;
+                }
+                if (is_object($file)) {
+                    return $this->normalizeUploadedFileObject($file);
+                }
+            } catch (Throwable $exception) {
+                // 本地入口没有 TP6 请求上下文时回退到注入的 $_FILES。
+            }
+        }
+
+        $file = $this->files[$key] ?? ($_FILES[$key] ?? null);
+        if (!is_array($file)) {
+            throw new BusinessException(ErrorCode::PARAM_INVALID, '请选择头像图片');
+        }
+
+        return $file;
+    }
+
+    /**
+     * 兼容 TP6 上传文件对象，转换为项目统一的上传文件数组。
+     *
+     * @param object $file 上传文件对象。
+     * @return array 上传文件结构。
+     */
+    private function normalizeUploadedFileObject(object $file): array
+    {
+        $path = method_exists($file, 'getPathname') ? (string)$file->getPathname() : '';
+        $name = method_exists($file, 'getOriginalName') ? (string)$file->getOriginalName() : 'avatar';
+        $size = method_exists($file, 'getSize') ? (int)$file->getSize() : ($path !== '' && is_file($path) ? (int)filesize($path) : 0);
+        $mime = method_exists($file, 'getMime') ? (string)$file->getMime() : '';
+
+        return [
+            'error' => UPLOAD_ERR_OK,
+            'name' => $name,
+            'type' => $mime,
+            'tmp_name' => $path,
+            'size' => $size,
+        ];
     }
 
     /**

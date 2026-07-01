@@ -1,0 +1,79 @@
+<view class="page">
+  <view class="top-bar">
+    <view class="top-action">‹</view>
+    <view>账单详情</view>
+    <view class="top-action">≡</view>
+  </view>
+
+  <view class="month-card">
+    <view class="ribbon"></view>
+    <view class="month-label">{{month}} 月总支出</view>
+    <view wx:if="{{monthNote}}" class="month-note">{{monthNote}}</view>
+    <view class="month-title">{{totalExpenseText}}</view>
+    <view class="compare-pill">⌁ {{compareText}}</view>
+    <picker mode="date" fields="month" value="{{month}}" bindchange="onMonthChange">
+      <view class="month-picker">切换月份</view>
+    </picker>
+  </view>
+
+  <view wx:if="{{groups.length === 0}}" class="empty">这个月还没有账单记录。</view>
+
+  <view wx:for="{{groups}}" wx:key="day" class="day-group">
+    <view class="day-title">{{item.day}}</view>
+    <view wx:for="{{item.records}}" wx:for-item="record" wx:key="id" class="bill-item" data-id="{{record.id}}" bindtap="openDetail">
+      <view class="bill-icon" style="background: {{record.category_color}};">
+        <image class="bill-icon-img" src="{{record.category_icon_path}}" mode="aspectFit" />
+      </view>
+      <view class="bill-main">
+        <view class="bill-title">{{record.remark || '未填写备注'}}</view>
+        <view class="bill-sub">{{record.category_name}} · {{record.time_text}}</view>
+      </view>
+      <view class="bill-money {{record.type === 2 ? 'income' : ''}}">
+        {{record.type === 1 ? '-' : '+'}}{{record.amount_text}}
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{detailVisible}}" class="detail-mask" bindtap="closeDetail">
+    <view class="detail-card" catchtap="noop">
+      <view class="detail-title">账单详情</view>
+      <block wx:if="{{!editMode}}">
+        <view class="detail-row"><text>备注</text><text>{{detail.remark || '未填写备注'}}</text></view>
+        <view class="detail-row"><text>分类</text><text>{{detail.category_name}}</text></view>
+        <view class="detail-row"><text>金额</text><text>{{detail.amount_text}}</text></view>
+        <view class="detail-row"><text>时间</text><text>{{detail.time_text}}</text></view>
+        <view class="detail-actions">
+          <button class="edit-button" bindtap="startEdit">编辑记录</button>
+          <button class="delete-button" bindtap="deleteRecord">删除记录</button>
+        </view>
+      </block>
+      <block wx:else>
+        <view class="edit-type-switch">
+          <view class="edit-type-item {{editRecord.type === 1 ? 'active' : ''}}" data-type="1" bindtap="switchEditType">支出</view>
+          <view class="edit-type-item {{editRecord.type === 2 ? 'active' : ''}}" data-type="2" bindtap="switchEditType">收入</view>
+        </view>
+        <input class="edit-input" type="digit" value="{{editRecord.amount}}" bindinput="onEditAmountInput" placeholder="金额" />
+        <input class="edit-input" value="{{editRecord.remark}}" bindinput="onEditRemarkInput" placeholder="备注" />
+        <view class="edit-date-row">
+          <picker mode="date" value="{{editRecord.happenedDate}}" bindchange="onEditDateChange">
+            <view class="edit-date-pill">{{editRecord.happenedDate}}</view>
+          </picker>
+          <picker mode="time" value="{{editRecord.happenedTime}}" bindchange="onEditTimeChange">
+            <view class="edit-date-pill">{{editRecord.happenedTime}}</view>
+          </picker>
+        </view>
+        <view class="edit-category-grid">
+          <view wx:for="{{editCategories}}" wx:key="id" class="edit-category {{editRecord.category_id === item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="selectEditCategory">
+            {{item.name}}
+          </view>
+        </view>
+        <view class="detail-actions">
+          <button class="edit-button" bindtap="saveEdit">保存修改</button>
+          <button class="cancel-button" bindtap="closeDetail">取消</button>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="float-add" bindtap="goRecord">+</view>
+</view>

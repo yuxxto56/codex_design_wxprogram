@@ -9,7 +9,7 @@ declare(strict_types=1);
  */
 $root = dirname(__DIR__);
 loadEnv($root . DIRECTORY_SEPARATOR . '.env');
-putenv('DEV_STORE_PATH=' . $root . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'dev-store.json');
+date_default_timezone_set('Asia/Shanghai');
 
 /**
  * 简单 PSR-4 自动加载。
@@ -94,7 +94,7 @@ if (preg_match('/Bearer\s+(.+)/', $authorization, $matches)) {
 }
 
 try {
-    $response = dispatch($method, $path, $_GET, $body, $userId);
+    $response = dispatch($method, $path, $_GET, $body, $_FILES, $userId);
 } catch (Throwable $exception) {
     $response = $base->fail($exception);
 }
@@ -108,10 +108,11 @@ echo json_encode($response, JSON_UNESCAPED_UNICODE);
  * @param string $path 请求路径。
  * @param array $query GET 参数。
  * @param array $body POST JSON 参数。
+ * @param array $files 上传文件参数。
  * @param int $userId 当前登录用户 ID，未登录为 0。
  * @return array 统一 API 响应。
  */
-function dispatch(string $method, string $path, array $query, array $body, int $userId): array
+function dispatch(string $method, string $path, array $query, array $body, array $files, int $userId): array
 {
     if ($method === 'GET' && $path === '/') {
         return (new BaseController())->success([
@@ -121,37 +122,49 @@ function dispatch(string $method, string $path, array $query, array $body, int $
         ]);
     }
     if ($method === 'POST' && $path === '/api/wx/login') {
-        return controller(new WxController(), $query, $body, $userId)->login();
+        return controller(new WxController(), $query, $body, $files, $userId)->login();
     }
     if ($method === 'GET' && $path === '/api/user/profile') {
-        return controller(new UserController(), $query, $body, $userId)->profile();
+        return controller(new UserController(), $query, $body, $files, $userId)->profile();
+    }
+    if ($method === 'POST' && $path === '/api/user/profile/save') {
+        return controller(new UserController(), $query, $body, $files, $userId)->saveProfile();
+    }
+    if ($method === 'POST' && $path === '/api/user/avatar/upload') {
+        return controller(new UserController(), $query, $body, $files, $userId)->uploadAvatar();
     }
     if ($method === 'GET' && $path === '/api/category/list') {
-        return controller(new CategoryController(), $query, $body, $userId)->list();
+        return controller(new CategoryController(), $query, $body, $files, $userId)->list();
+    }
+    if ($method === 'POST' && $path === '/api/category/create') {
+        return controller(new CategoryController(), $query, $body, $files, $userId)->create();
     }
     if ($method === 'POST' && $path === '/api/record/create') {
-        return controller(new RecordController(), $query, $body, $userId)->create();
+        return controller(new RecordController(), $query, $body, $files, $userId)->create();
     }
     if ($method === 'POST' && $path === '/api/record/update') {
-        return controller(new RecordController(), $query, $body, $userId)->update();
+        return controller(new RecordController(), $query, $body, $files, $userId)->update();
     }
     if ($method === 'POST' && $path === '/api/record/delete') {
-        return controller(new RecordController(), $query, $body, $userId)->delete();
+        return controller(new RecordController(), $query, $body, $files, $userId)->delete();
     }
     if ($method === 'GET' && $path === '/api/record/list') {
-        return controller(new RecordController(), $query, $body, $userId)->list();
+        return controller(new RecordController(), $query, $body, $files, $userId)->list();
+    }
+    if ($method === 'GET' && $path === '/api/record/latest-month') {
+        return controller(new RecordController(), $query, $body, $files, $userId)->latestMonth();
     }
     if ($method === 'GET' && $path === '/api/record/detail') {
-        return controller(new RecordController(), $query, $body, $userId)->detail();
+        return controller(new RecordController(), $query, $body, $files, $userId)->detail();
     }
     if ($method === 'GET' && $path === '/api/home/summary') {
-        return controller(new HomeController(), $query, $body, $userId)->summary();
+        return controller(new HomeController(), $query, $body, $files, $userId)->summary();
     }
     if ($method === 'GET' && $path === '/api/budget/month') {
-        return controller(new BudgetController(), $query, $body, $userId)->month();
+        return controller(new BudgetController(), $query, $body, $files, $userId)->month();
     }
     if ($method === 'POST' && $path === '/api/budget/save') {
-        return controller(new BudgetController(), $query, $body, $userId)->save();
+        return controller(new BudgetController(), $query, $body, $files, $userId)->save();
     }
 
     return $base = (new BaseController())->fail(new \app\common\BusinessException(\app\common\ErrorCode::NOT_FOUND, '接口不存在'));
@@ -164,11 +177,13 @@ function dispatch(string $method, string $path, array $query, array $body, int $
  * @param T $controller 业务 Controller。
  * @param array $query GET 参数。
  * @param array $body POST body 参数。
+ * @param array $files 上传文件参数。
  * @param int $userId 当前登录用户 ID。
  * @return T 已注入上下文的 Controller。
  */
-function controller(BaseController $controller, array $query, array $body, int $userId): BaseController
+function controller(BaseController $controller, array $query, array $body, array $files, int $userId): BaseController
 {
     $controller->setRequestContext($query, $body, $userId);
+    $controller->setUploadedFiles($files);
     return $controller;
 }

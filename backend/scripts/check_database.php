@@ -25,9 +25,12 @@ try {
     $inspection = inspect_database($dbPdo);
     $status = array_merge($status, $inspection);
 
-    if (!$status['tables_ready']) {
+    if (!$status['tables_ready'] && ($status['missing_tables'] ?? []) !== []) {
         $status['error_type'] = '表结构不完整';
         $status['error_message'] = '缺少表: ' . implode(', ', $status['missing_tables']);
+    } elseif (!$status['tables_ready']) {
+        $status['error_type'] = '表结构不完整';
+        $status['error_message'] = 'categories 缺少 user_id 字段或 idx_user_type_status_sort 索引';
     } elseif (!$status['seed_ready']) {
         $status['error_type'] = '初始化数据不完整';
         $status['error_message'] = "categories 期望 8 条，实际 {$status['category_count']} 条";

@@ -1,0 +1,256 @@
+.date {
+  margin-top: 18rpx;
+  color: #837375;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.hello {
+  margin-top: 12rpx;
+  font-size: 52rpx;
+  font-weight: 800;
+  color: #1b1c1a;
+  line-height: 1.08;
+}
+
+.cloud-shape {
+  position: relative;
+  width: 68rpx;
+  height: 34rpx;
+  margin-top: 18rpx;
+}
+
+.cloud-shape view {
+  position: absolute;
+  bottom: 0;
+  border: 5rpx solid #1b1c1a;
+  background: transparent;
+}
+
+.cloud-shape view:nth-child(1) {
+  left: 0;
+  width: 34rpx;
+  height: 22rpx;
+  border-right: 0;
+  border-radius: 22rpx 0 0 22rpx;
+}
+
+.cloud-shape view:nth-child(2) {
+  left: 20rpx;
+  bottom: 8rpx;
+  width: 28rpx;
+  height: 22rpx;
+  border-bottom: 0;
+  border-radius: 28rpx 28rpx 0 0;
+}
+
+.cloud-shape view:nth-child(3) {
+  right: 0;
+  width: 42rpx;
+  height: 22rpx;
+  border-left: 0;
+  border-radius: 0 22rpx 22rpx 0;
+}
+
+.summary-card {
+  position: relative;
+  margin-top: 36rpx;
+  padding: 42rpx 42rpx 36rpx;
+  overflow: hidden;
+  border-radius: 54rpx;
+  background: #f8dadd;
+  box-shadow: 0 20rpx 52rpx rgba(148, 84, 102, 0.09);
+}
+
+.summary-card::after {
+  content: "";
+  position: absolute;
+  right: -54rpx;
+  top: -34rpx;
+  width: 178rpx;
+  height: 178rpx;
+  border-radius: 50%;
+  background: rgba(172, 210, 206, 0.4);
+}
+
+.summary-blob {
+  position: absolute;
+  right: -14rpx;
+  top: 20rpx;
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.28);
+  transform: rotate(-18deg);
+}
+
+.summary-tape {
+  right: 30rpx;
+  top: 16rpx;
+  z-index: 1;
+}
+
+.summary-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.label {
+  color: #514345;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.amount {
+  margin-top: 8rpx;
+  color: #864e5a;
+  font-size: 54rpx;
+  font-weight: 800;
+}
+
+.budget {
+  margin-top: 8rpx;
+  color: #1b1c1a;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.right {
+  text-align: right;
+}
+
+.progress-meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 36rpx;
+  color: #514345;
+  font-size: 24rpx;
+}
+
+.progress-track {
+  position: relative;
+  z-index: 1;
+  height: 24rpx;
+  margin-top: 14rpx;
+  border-radius: 999rpx;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999rpx;
+  background: linear-gradient(90deg, #945466, #ff9db3);
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 48rpx 0 18rpx;
+  font-size: 36rpx;
+  font-weight: 800;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.month-badge {
+  margin-left: 14rpx;
+  padding: 7rpx 14rpx;
+  border-radius: 999rpx;
+  background: #f8dadd;
+  color: #864e5a;
+  font-size: 21rpx;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.link {
+  color: #864e5a;
+  font-size: 24rpx;
+  white-space: nowrap;
+}
+
+.empty-card,
+.record-item {
+  margin-bottom: 18rpx;
+  padding: 24rpx;
+  border-radius: 34rpx;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12rpx 34rpx rgba(103, 82, 76, 0.05);
+}
+
+.empty-card {
+  display: flex;
+  align-items: center;
+  color: #837375;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.empty-icon {
+  width: 62rpx;
+  height: 62rpx;
+  margin-right: 20rpx;
+  border-radius: 50%;
+  background: #ffd9df;
+  color: #864e5a;
+  line-height: 62rpx;
+  text-align: center;
+  font-size: 36rpx;
+}
+
+.record-item {
+  display: flex;
+  align-items: center;
+}
+
+.record-first {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(216, 240, 236, 0.52));
+}
+
+.record-icon {
+  width: 74rpx;
+  height: 74rpx;
+  border-radius: 50%;
+  background: #eee3ad;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.record-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.record-main {
+  flex: 1;
+  margin-left: 24rpx;
+}
+
+.record-title {
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.record-sub {
+  margin-top: 6rpx;
+  color: #837375;
+  font-size: 24rpx;
+}
+
+.record-money {
+  color: #864e5a;
+  font-size: 30rpx;
+  font-weight: 800;
+}

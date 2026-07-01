@@ -1,0 +1,64 @@
+<view class="login-page">
+  <view class="brand-card">
+    <view class="brand">萌萌记账</view>
+    <view class="mascot">
+      <view class="mascot-ring">
+        <view class="bear">
+          <view class="ear ear-left"></view>
+          <view class="ear ear-right"></view>
+          <view class="bear-head">
+            <view class="eye eye-left"></view>
+            <view class="eye eye-right"></view>
+            <view class="nose"></view>
+            <view class="mouth mouth-left"></view>
+            <view class="mouth mouth-right"></view>
+            <view class="blush blush-left"></view>
+            <view class="blush blush-right"></view>
+          </view>
+          <view class="bear-body"></view>
+        </view>
+      </view>
+      <view class="coin">¥</view>
+    </view>
+    <view class="title">欢迎回来！</view>
+    <view class="subtitle">准备好记录今天的点滴喜悦与开支了吗？</view>
+  </view>
+
+  <button class="wechat-button" bindtap="onWechatLogin" loading="{{loading}}" disabled="{{loading}}">
+    <text class="button-icon">↻</text>
+    <text>微信一键登录</text>
+  </button>
+  <view class="login-tools">
+    <button class="tool-card help-card" bindtap="showHelpCenter">
+      <text class="tool-title">帮助中心</text>
+      <text class="tool-desc">登录失败与客服</text>
+    </button>
+    <button class="tool-card guide-card" bindtap="showLoginGuide">
+      <text class="tool-title">登录说明</text>
+      <text class="tool-desc">微信一键登录</text>
+    </button>
+  </view>
+
+  <view wx:if="{{helpVisible}}" class="help-mask" catchtap="hideHelpCenter">
+    <view class="help-sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="sheet-title">帮助中心</view>
+      <view class="help-list">
+        <view class="help-item">
+          <text class="help-question">无法登录怎么办？</text>
+          <text class="help-answer">请先确认网络正常，再重新点击“微信一键登录”。本地调试时还需要确认开发者工具 AppID 与后端配置一致。</text>
+        </view>
+        <view class="help-item">
+          <text class="help-question">是否需要微信授权？</text>
+          <text class="help-answer">需要使用微信登录凭证完成账号识别，不会要求填写手机号或密码。</text>
+        </view>
+        <view class="help-item">
+          <text class="help-question">数据是否安全？</text>
+          <text class="help-answer">记账数据会绑定到当前登录账号，登录后接口需要携带有效 token 才能访问。</text>
+        </view>
+      </view>
+      <button class="contact-button" open-type="contact" bindcontact="onContactResult">联系客服</button>
+      <button class="sheet-close" bindtap="hideHelpCenter">我知道了</button>
+    </view>
+  </view>
+</view>

@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 namespace app\model;
 
-use app\common\JsonStore;
-use PDO;
+use app\common\Database;
 
 /**
  * 用户数据模型。
@@ -18,8 +17,6 @@ final class UserModel
     public const FIELD_NICKNAME = 'nickname';
     public const FIELD_AVATAR = 'avatar';
 
-    private static array $users = [];
-    private static int $nextId = 1;
     /** @var object|null */
     private $pdo;
 
@@ -28,7 +25,7 @@ final class UserModel
      */
     public function __construct($pdo = null)
     {
-        $this->pdo = $pdo ?? $this->createPdoFromEnv();
+        $this->pdo = $pdo;
     }
 
     /**
@@ -41,33 +38,12 @@ final class UserModel
      */
     public function findOrCreateByOpenid(string $openid, string $nickname = '糯米豆', string $avatar = ''): array
     {
-        if ($this->databaseEnabled()) {
-            $user = $this->findByOpenidFromDatabase($openid);
-            if ($user !== null) {
-                return $user;
-            }
-
-            return $this->createUserInDatabase($openid, $nickname, $avatar);
+        $user = $this->findByOpenidFromDatabase($openid);
+        if ($user !== null) {
+            return $user;
         }
 
-        $this->load();
-        foreach (self::$users as $user) {
-            if ($user[self::FIELD_OPENID] === $openid) {
-                return $user;
-            }
-        }
-
-        $user = [
-            self::FIELD_ID => self::$nextId++,
-            self::FIELD_OPENID => $openid,
-            self::FIELD_NICKNAME => $nickname,
-            self::FIELD_AVATAR => $avatar,
-            'created_at' => time(),
-        ];
-        self::$users[] = $user;
-        $this->save();
-
-        return $user;
+        return $this->createUserInDatabase($openid, $nickname, $avatar);
     }
 
     /**
@@ -78,79 +54,56 @@ final class UserModel
      */
     public function findById(int $id): ?array
     {
-        if ($this->databaseEnabled()) {
-            return $this->findByIdFromDatabase($id);
-        }
-
-        $this->load();
-        foreach (self::$users as $user) {
-            if ((int)$user[self::FIELD_ID] === $id) {
-                return $user;
-            }
-        }
-
-        return null;
+        return $this->findByIdFromDatabase($id);
     }
 
     /**
-     * 从开发 JSON 存储加载用户数据和自增 ID。
+     * 更新当前用户资料。
      */
-    private function load(): void
+    public function updateProfile(int $id, string $nickname, string $avatar): ?array
     {
-        if (!JsonStore::enabled()) {
-            return;
-        }
-        self::$users = JsonStore::read('users');
-        $meta = JsonStore::read('meta', ['next_user_id' => 1]);
-        self::$nextId = (int)($meta['next_user_id'] ?? (count(self::$users) + 1));
-    }
-
-    /**
-     * 保存用户数据和自增 ID 到开发 JSON 存储。
-     */
-    private function save(): void
-    {
-        if (!JsonStore::enabled()) {
-            return;
-        }
-        $meta = JsonStore::read('meta');
-        $meta['next_user_id'] = self::$nextId;
-        JsonStore::write('users', self::$users);
-        JsonStore::write('meta', $meta);
-    }
-
-    /**
-     * 当前模型是否使用数据库存储。
-     */
-    private function databaseEnabled(): bool
-    {
-        return $this->pdo !== null;
-    }
-
-    /**
-     * 从环境变量创建 MySQL PDO 连接。
-     *
-     * 未配置数据库环境时返回 null，保留本地 JSON/内存 fallback。
-     */
-    private function createPdoFromEnv(): ?PDO
-    {
-        $host = getenv('DATABASE_HOST') ?: getenv('MYSQL_HOST') ?: '';
-        $database = getenv('DATABASE_NAME') ?: getenv('MYSQL_DATABASE') ?: '';
-        $user = getenv('DATABASE_USER') ?: getenv('MYSQL_USERNAME') ?: '';
-        if ($host === '' || $database === '' || $user === '' || !extension_loaded('pdo_mysql')) {
+        $now = time();
+        $statement = $this->database()->prepare(
+            'UPDATE `users` SET `nickname` = ?, `avatar` = ?, `updated_at` = ? WHERE `id` = ? AND `status` = 1'
+        );
+        $statement->execute([$nickname, $avatar, $now, $id]);
+        if ($statement->rowCount() < 1) {
             return null;
         }
 
-        $port = getenv('DATABASE_PORT') ?: getenv('MYSQL_PORT') ?: '3306';
-        $password = getenv('DATABASE_PASS') ?: getenv('MYSQL_PASSWORD') ?: '';
-        $charset = getenv('DATABASE_CHARSET') ?: getenv('MYSQL_CHARSET') ?: 'utf8mb4';
-        $dsn = "mysql:host={$host};port={$port};dbname={$database};charset={$charset}";
+        return $this->findByIdFromDatabase($id);
+    }
 
-        return new PDO($dsn, $user, $password, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_TIMEOUT => 8,
-        ]);
+    /**
+     * 更新当前用户头像。
+     */
+    public function updateAvatar(int $id, string $avatar): ?array
+    {
+        $now = time();
+        $statement = $this->database()->prepare(
+            'UPDATE `users` SET `avatar` = ?, `updated_at` = ? WHERE `id` = ? AND `status` = 1'
+        );
+        $statement->execute([$avatar, $now, $id]);
+        if ($statement->rowCount() < 1) {
+            return null;
+        }
+
+        return $this->findByIdFromDatabase($id);
+    }
+
+    /**
+     * 获取用户数据库连接。
+     *
+     * @return object PDO 或测试注入的兼容对象。
+     */
+    private function database()
+    {
+        if ($this->pdo !== null) {
+            return $this->pdo;
+        }
+
+        $this->pdo = Database::connection();
+        return $this->pdo;
     }
 
     /**
@@ -158,7 +111,7 @@ final class UserModel
      */
     private function findByOpenidFromDatabase(string $openid): ?array
     {
-        $statement = $this->pdo->prepare('SELECT `id`, `openid`, `nickname`, `avatar`, `created_at` FROM `users` WHERE `openid` = ? AND `status` = 1 LIMIT 1');
+        $statement = $this->database()->prepare('SELECT `id`, `openid`, `nickname`, `avatar`, `created_at` FROM `users` WHERE `openid` = ? AND `status` = 1 LIMIT 1');
         $statement->execute([$openid]);
         $user = $statement->fetch();
 
@@ -170,7 +123,7 @@ final class UserModel
      */
     private function findByIdFromDatabase(int $id): ?array
     {
-        $statement = $this->pdo->prepare('SELECT `id`, `openid`, `nickname`, `avatar`, `created_at` FROM `users` WHERE `id` = ? AND `status` = 1 LIMIT 1');
+        $statement = $this->database()->prepare('SELECT `id`, `openid`, `nickname`, `avatar`, `created_at` FROM `users` WHERE `id` = ? AND `status` = 1 LIMIT 1');
         $statement->execute([$id]);
         $user = $statement->fetch();
 
@@ -183,11 +136,12 @@ final class UserModel
     private function createUserInDatabase(string $openid, string $nickname, string $avatar): array
     {
         $now = time();
-        $statement = $this->pdo->prepare('INSERT INTO `users` (`openid`, `nickname`, `avatar`, `status`, `created_at`, `updated_at`) VALUES (?, ?, ?, 1, ?, ?)');
+        $pdo = $this->database();
+        $statement = $pdo->prepare('INSERT INTO `users` (`openid`, `nickname`, `avatar`, `status`, `created_at`, `updated_at`) VALUES (?, ?, ?, 1, ?, ?)');
         $statement->execute([$openid, $nickname, $avatar, $now, $now]);
 
-        return $this->findByIdFromDatabase((int)$this->pdo->lastInsertId()) ?? [
-            self::FIELD_ID => (int)$this->pdo->lastInsertId(),
+        return $this->findByIdFromDatabase((int)$pdo->lastInsertId()) ?? [
+            self::FIELD_ID => (int)$pdo->lastInsertId(),
             self::FIELD_OPENID => $openid,
             self::FIELD_NICKNAME => $nickname,
             self::FIELD_AVATAR => $avatar,

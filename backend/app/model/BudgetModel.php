@@ -3,12 +3,12 @@ declare(strict_types=1);
 
 namespace app\model;
 
-use app\common\JsonStore;
+use app\common\Database;
 
 /**
  * 月预算数据模型。
  *
- * 对应 MySQL 的 monthly_budgets 表；当前开发 API 使用 JsonStore 做本地模拟存储。
+ * 对应 MySQL 的 monthly_budgets 表；按 user_id + month 唯一键保存月总预算。
  */
 final class BudgetModel
 {
@@ -16,7 +16,16 @@ final class BudgetModel
     public const FIELD_MONTH = 'month';
     public const FIELD_AMOUNT = 'amount';
 
-    private array $budgets = [];
+    /** @var object|null */
+    private $pdo;
+
+    /**
+     * @param object|null $pdo 数据库连接，生产默认从环境变量创建，测试可注入兼容对象。
+     */
+    public function __construct($pdo = null)
+    {
+        $this->pdo = $pdo;
+    }
 
     /**
      * 保存或覆盖用户某个月份的预算。
@@ -27,17 +36,19 @@ final class BudgetModel
      */
     public function save(int $userId, string $month, int $amount): array
     {
-        $this->load();
-        $key = $this->key($userId, $month);
-        $this->budgets[$key] = [
+        $now = time();
+        $statement = $this->database()->prepare(
+            'INSERT INTO `monthly_budgets` (`user_id`, `month`, `amount`, `created_at`, `updated_at`) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `amount` = VALUES(`amount`), `updated_at` = VALUES(`updated_at`)'
+        );
+        $statement->execute([$userId, $month, $amount, $now, $now]);
+
+        return $this->findByUserAndMonth($userId, $month) ?? [
             self::FIELD_USER_ID => $userId,
             self::FIELD_MONTH => $month,
             self::FIELD_AMOUNT => $amount,
-            'updated_at' => time(),
+            'created_at' => $now,
+            'updated_at' => $now,
         ];
-        $this->saveStore();
-
-        return $this->budgets[$key];
     }
 
     /**
@@ -49,35 +60,27 @@ final class BudgetModel
      */
     public function findByUserAndMonth(int $userId, string $month): ?array
     {
-        $this->load();
-        return $this->budgets[$this->key($userId, $month)] ?? null;
+        $statement = $this->database()->prepare(
+            'SELECT `id`, `user_id`, `month`, `amount`, `created_at`, `updated_at` FROM `monthly_budgets` WHERE `user_id` = ? AND `month` = ? LIMIT 1'
+        );
+        $statement->execute([$userId, $month]);
+        $budget = $statement->fetch();
+
+        return is_array($budget) ? $budget : null;
     }
 
     /**
-     * 生成开发存储中的预算唯一键。
+     * 获取预算数据库连接。
+     *
+     * @return object PDO 或测试注入的兼容对象。
      */
-    private function key(int $userId, string $month): string
+    private function database()
     {
-        return $userId . ':' . $month;
-    }
-
-    /**
-     * 从开发 JSON 存储加载预算数据。
-     */
-    private function load(): void
-    {
-        if (JsonStore::enabled()) {
-            $this->budgets = JsonStore::read('budgets');
+        if ($this->pdo !== null) {
+            return $this->pdo;
         }
-    }
 
-    /**
-     * 保存预算数据到开发 JSON 存储。
-     */
-    private function saveStore(): void
-    {
-        if (JsonStore::enabled()) {
-            JsonStore::write('budgets', $this->budgets);
-        }
+        $this->pdo = Database::connection();
+        return $this->pdo;
     }
 }

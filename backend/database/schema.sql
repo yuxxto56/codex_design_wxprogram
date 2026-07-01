@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 CREATE TABLE IF NOT EXISTS `categories` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '分类ID',
+  `user_id` INT(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '所属用户ID，0表示系统分类',
   `type` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '分类类型：1支出，2收入',
   `name` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '分类名称',
   `icon` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '小程序图标标识',
@@ -27,7 +28,8 @@ CREATE TABLE IF NOT EXISTS `categories` (
   `created_at` INT(10) NOT NULL DEFAULT 0 COMMENT '创建时间，Unix秒',
   `updated_at` INT(10) NOT NULL DEFAULT 0 COMMENT '更新时间，Unix秒',
   PRIMARY KEY (`id`),
-  KEY `idx_type_status_sort` (`type`, `status`, `sort`)
+  KEY `idx_type_status_sort` (`type`, `status`, `sort`),
+  KEY `idx_user_type_status_sort` (`user_id`, `type`, `status`, `sort`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统预置收支分类表';
 
 CREATE TABLE IF NOT EXISTS `ledger_records` (

@@ -1,0 +1,83 @@
+<view class="page">
+  <view class="top-bar">
+    <view class="top-action">‹</view>
+    <view>萌萌记账</view>
+    <view class="top-action">···</view>
+  </view>
+
+  <view class="profile-card">
+    <view class="name-sticker">糯米豆</view>
+    <view class="avatar">
+      <image wx:if="{{avatarPreview}}" class="avatar-image" src="{{avatarPreview}}" mode="aspectFill"></image>
+      <view wx:else>
+        <view class="avatar-hair"></view>
+        <view class="avatar-face">
+          <view class="avatar-eye left"></view>
+          <view class="avatar-eye right"></view>
+          <view class="avatar-mouth"></view>
+        </view>
+      </view>
+      <view class="avatar-edit">✎</view>
+    </view>
+    <view class="nickname">{{user.nickname || '糯米豆'}}</view>
+    <view class="join">从今天开始认真记账</view>
+  </view>
+
+  <view class="stats">
+    <view class="stat-card">
+      <view class="stat-icon wallet-icon"></view>
+      <view class="stat-label">总存款</view>
+      <view class="stat-value income">{{incomeText}}</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-icon mint budget-icon"></view>
+      <view class="stat-label">预算剩余</view>
+      <view class="stat-value">{{remainingText}}</view>
+      <view class="mini-track"><view></view></view>
+    </view>
+  </view>
+
+  <view class="menu">
+    <view class="menu-item" bindtap="openProfileSettings"><view class="menu-icon account-icon"></view><text class="menu-text">账号设置</text><view class="arrow">›</view></view>
+    <view class="menu-item" bindtap="goBudget"><view class="menu-icon mint budget-line-icon"></view><text class="menu-text">预算管理</text><view class="arrow">›</view></view>
+    <view class="menu-item" bindtap="openSkin"><view class="menu-icon yellow skin-icon"></view><text class="menu-text">个性皮肤</text><view class="dot"></view><view class="arrow">›</view></view>
+    <view class="menu-item" bindtap="openAbout"><view class="menu-icon gray info-icon"></view><text class="menu-text">关于我们</text><view class="arrow">›</view></view>
+  </view>
+
+  <button class="logout" bindtap="logout">退出登录</button>
+
+  <view wx:if="{{profileModalVisible}}" class="modal-mask" bindtap="closeProfileSettings">
+    <view class="modal-card" catchtap="noop">
+      <view class="modal-title">账号设置</view>
+      <view class="avatar-upload">
+        <view class="modal-avatar">
+          <image wx:if="{{avatarPreview}}" class="avatar-image" src="{{avatarPreview}}" mode="aspectFill"></image>
+          <view wx:else>
+            <view class="avatar-hair"></view>
+            <view class="avatar-face">
+              <view class="avatar-eye left"></view>
+              <view class="avatar-eye right"></view>
+              <view class="avatar-mouth"></view>
+            </view>
+          </view>
+        </view>
+        <button class="avatar-upload-button" bindtap="chooseAvatar" loading="{{uploadingAvatar}}">上传头像</button>
+        <view class="avatar-upload-tip">支持 JPG、PNG、WebP，最大 5M</view>
+      </view>
+      <view class="modal-label">昵称</view>
+      <input class="modal-input" maxlength="16" value="{{nicknameInput}}" bindinput="onNicknameInput" placeholder="请输入昵称" />
+      <view class="modal-actions">
+        <button class="modal-secondary" bindtap="closeProfileSettings">取消</button>
+        <button class="modal-primary" bindtap="saveProfile" loading="{{savingProfile}}">保存</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{infoModalVisible}}" class="modal-mask" bindtap="closeInfoModal">
+    <view class="modal-card" catchtap="noop">
+      <view class="modal-title">{{infoTitle}}</view>
+      <view class="modal-copy">{{infoContent}}</view>
+      <button class="modal-single" bindtap="closeInfoModal">知道了</button>
+    </view>
+  </view>
+</view>

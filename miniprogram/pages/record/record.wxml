@@ -1,0 +1,70 @@
+<view class="page">
+  <view class="top-bar">
+    <view class="top-action">‹</view>
+    <view>萌萌记账</view>
+    <view class="top-action">···</view>
+  </view>
+
+  <view class="type-switch">
+    <view class="type-item {{type === 1 ? 'active' : ''}}" data-type="1" bindtap="switchType">支出</view>
+    <view class="type-item {{type === 2 ? 'active' : ''}}" data-type="2" bindtap="switchType">收入</view>
+  </view>
+
+  <view class="amount-box">
+    <view class="tape amount-tape"></view>
+    <view class="amount">¥ {{amount || '0.00'}}</view>
+    <view class="hint">点击键盘输入金额</view>
+  </view>
+
+  <view class="section-label">选择分类</view>
+  <view class="category-grid">
+    <view wx:for="{{categories}}" wx:key="id" class="category {{categoryId === item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="selectCategory">
+      <view class="category-icon" style="background: {{item.color}};">
+        <image class="category-icon-img" src="{{item.icon_path}}" mode="aspectFit" />
+      </view>
+      <view>{{item.name}}</view>
+    </view>
+    <view class="category more-category" bindtap="openCategoryModal">
+      <view class="category-icon more-icon">
+        <text></text>
+        <text></text>
+        <text></text>
+        <text></text>
+        <text></text>
+        <text></text>
+        <text></text>
+        <text></text>
+        <text></text>
+      </view>
+      <view>更多</view>
+    </view>
+  </view>
+
+  <view class="date-time-row">
+    <picker mode="date" value="{{happenedDate}}" bindchange="onDateChange">
+      <view class="date-time-pill">{{happenedDate}}</view>
+    </picker>
+    <picker mode="time" value="{{happenedTime}}" bindchange="onTimeChange">
+      <view class="date-time-pill">{{happenedTime}}</view>
+    </picker>
+  </view>
+
+  <input class="remark-input" value="{{remark}}" bindinput="onRemarkInput" placeholder="写下这一刻的心情..." />
+
+  <view class="keyboard">
+    <button wx:for="{{keyboardKeys}}" wx:key="value" class="{{item.className}}" data-key="{{item.value}}" bindtap="onKeyTap">{{item.label}}</button>
+  </view>
+
+  <button class="save-button" bindtap="saveRecord" loading="{{saving}}">✓ 保存</button>
+
+  <view wx:if="{{categoryModalVisible}}" class="modal-mask" bindtap="closeCategoryModal">
+    <view class="modal-card" catchtap="noop">
+      <view class="modal-title">新增{{type === 1 ? '支出' : '收入'}}分类</view>
+      <input class="modal-input" maxlength="8" value="{{newCategoryName}}" bindinput="onNewCategoryInput" placeholder="例如 咖啡" />
+      <view class="modal-actions">
+        <button class="modal-secondary" bindtap="closeCategoryModal">取消</button>
+        <button class="modal-primary" bindtap="saveCategory">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

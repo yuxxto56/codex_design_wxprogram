@@ -7,7 +7,7 @@ use app\common\TokenService;
 use app\logic\WxAuthLogic;
 
 $runner->test('wx login requires appid and secret for real code', function () use ($runner): void {
-    $logic = new WxAuthLogic(null, 'test-secret', '', '');
+    $logic = new WxAuthLogic(new \app\model\UserModel(new FakePdo()), 'test-secret', '', '');
 
     try {
         $logic->loginByCode('real-code');
@@ -20,7 +20,7 @@ $runner->test('wx login requires appid and secret for real code', function () us
 
 $runner->test('wx login resolves openid through code2session when configured', function () use ($runner): void {
     $calledUrl = '';
-    $logic = new WxAuthLogic(null, 'test-secret', 'wx-appid', 'wx-secret', function (string $url) use (&$calledUrl): string {
+    $logic = new WxAuthLogic(new \app\model\UserModel(new FakePdo()), 'test-secret', 'wx-appid', 'wx-secret', function (string $url) use (&$calledUrl): string {
         $calledUrl = $url;
         return json_encode(['openid' => 'openid_real_user', 'session_key' => 'session']);
     });
@@ -39,8 +39,10 @@ $runner->test('wx login default token secret follows app secret environment', fu
     putenv('APP_SECRET=production-token-secret');
 
     try {
-        $logic = new WxAuthLogic();
-        $result = $logic->loginByCode('mock_env_secret_user');
+        $logic = new WxAuthLogic(new \app\model\UserModel(new FakePdo()), null, 'wx-appid', 'wx-secret', function (): string {
+            return json_encode(['openid' => 'openid_env_secret_user', 'session_key' => 'session']);
+        });
+        $result = $logic->loginByCode('real-code');
         $userId = (new TokenService('production-token-secret'))->parse($result['token']);
 
         $runner->assertTrue($userId > 0, 'token signed by default WxAuthLogic should be parsed with APP_SECRET');
@@ -50,6 +52,19 @@ $runner->test('wx login default token secret follows app secret environment', fu
         } else {
             putenv('APP_SECRET=' . $previousSecret);
         }
+    }
+});
+
+$runner->test('wx login rejects mock code', function () use ($runner): void {
+    $logic = new WxAuthLogic(new \app\model\UserModel(new FakePdo()), 'test-secret', 'wx-appid', 'wx-secret', function (): string {
+        return json_encode(['errcode' => 40029, 'errmsg' => 'invalid code']);
+    });
+
+    try {
+        $logic->loginByCode('mock_dev_user');
+        throw new RuntimeException('expected mock code to be rejected');
+    } catch (BusinessException $exception) {
+        $runner->assertSame(ErrorCode::WX_LOGIN_FAILED, $exception->getCode());
     }
 });
 

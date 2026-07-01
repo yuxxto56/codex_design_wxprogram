@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace app\model;
 
-use app\common\JsonStore;
+use app\common\Database;
+use DateTimeImmutable;
+use DateTimeZone;
 
 /**
  * 收支记录数据模型。
@@ -23,8 +25,16 @@ final class RecordModel
     public const TYPE_EXPENSE = 1;
     public const TYPE_INCOME = 2;
 
-    private array $records = [];
-    private int $nextId = 1;
+    /** @var object|null */
+    private $pdo;
+
+    /**
+     * @param object|null $pdo 数据库连接，生产默认从环境变量创建，测试可注入兼容对象。
+     */
+    public function __construct($pdo = null)
+    {
+        $this->pdo = $pdo;
+    }
 
     /**
      * 新增一条收支记录。
@@ -34,13 +44,34 @@ final class RecordModel
      */
     public function create(array $data): array
     {
-        $this->load();
-        $data[self::FIELD_ID] = $this->nextId++;
-        $data[self::FIELD_CREATED_AT] = $data[self::FIELD_CREATED_AT] ?? time();
-        $this->records[] = $data;
-        $this->save();
+        $now = time();
+        $createdAt = (int)($data[self::FIELD_CREATED_AT] ?? $now);
+        $statement = $this->database()->prepare(
+            'INSERT INTO `ledger_records` (`user_id`, `type`, `category_id`, `amount`, `remark`, `happened_at`, `created_at`, `updated_at`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        $statement->execute([
+            (int)$data[self::FIELD_USER_ID],
+            (int)$data[self::FIELD_TYPE],
+            (int)$data[self::FIELD_CATEGORY_ID],
+            (int)$data[self::FIELD_AMOUNT],
+            (string)($data[self::FIELD_REMARK] ?? ''),
+            (int)$data[self::FIELD_HAPPENED_AT],
+            $createdAt,
+            $now,
+        ]);
 
-        return $data;
+        $id = (int)$this->database()->lastInsertId();
+        return $this->findByUser((int)$data[self::FIELD_USER_ID], $id) ?? [
+            self::FIELD_ID => $id,
+            self::FIELD_USER_ID => (int)$data[self::FIELD_USER_ID],
+            self::FIELD_TYPE => (int)$data[self::FIELD_TYPE],
+            self::FIELD_CATEGORY_ID => (int)$data[self::FIELD_CATEGORY_ID],
+            self::FIELD_AMOUNT => (int)$data[self::FIELD_AMOUNT],
+            self::FIELD_REMARK => (string)($data[self::FIELD_REMARK] ?? ''),
+            self::FIELD_HAPPENED_AT => (int)$data[self::FIELD_HAPPENED_AT],
+            self::FIELD_CREATED_AT => $createdAt,
+            'updated_at' => $now,
+        ];
     }
 
     /**
@@ -53,16 +84,24 @@ final class RecordModel
      */
     public function updateByUser(int $userId, int $id, array $data): ?array
     {
-        $this->load();
-        foreach ($this->records as $index => $record) {
-            if ((int)$record[self::FIELD_ID] === $id && (int)$record[self::FIELD_USER_ID] === $userId) {
-                $this->records[$index] = array_merge($record, $data);
-                $this->save();
-                return $this->records[$index];
-            }
+        $statement = $this->database()->prepare(
+            'UPDATE `ledger_records` SET `type` = ?, `category_id` = ?, `amount` = ?, `remark` = ?, `happened_at` = ?, `updated_at` = ? WHERE `id` = ? AND `user_id` = ?'
+        );
+        $statement->execute([
+            (int)$data[self::FIELD_TYPE],
+            (int)$data[self::FIELD_CATEGORY_ID],
+            (int)$data[self::FIELD_AMOUNT],
+            (string)($data[self::FIELD_REMARK] ?? ''),
+            (int)$data[self::FIELD_HAPPENED_AT],
+            time(),
+            $id,
+            $userId,
+        ]);
+        if ($statement->rowCount() < 1) {
+            return null;
         }
 
-        return null;
+        return $this->findByUser($userId, $id);
     }
 
     /**
@@ -74,16 +113,9 @@ final class RecordModel
      */
     public function deleteByUser(int $userId, int $id): bool
     {
-        $this->load();
-        foreach ($this->records as $index => $record) {
-            if ((int)$record[self::FIELD_ID] === $id && (int)$record[self::FIELD_USER_ID] === $userId) {
-                array_splice($this->records, $index, 1);
-                $this->save();
-                return true;
-            }
-        }
-
-        return false;
+        $statement = $this->database()->prepare('DELETE FROM `ledger_records` WHERE `id` = ? AND `user_id` = ?');
+        $statement->execute([$id, $userId]);
+        return $statement->rowCount() > 0;
     }
 
     /**
@@ -94,14 +126,13 @@ final class RecordModel
      */
     public function findByUser(int $userId, int $id): ?array
     {
-        $this->load();
-        foreach ($this->records as $record) {
-            if ((int)$record[self::FIELD_ID] === $id && (int)$record[self::FIELD_USER_ID] === $userId) {
-                return $record;
-            }
-        }
+        $statement = $this->database()->prepare(
+            'SELECT `id`, `user_id`, `type`, `category_id`, `amount`, `remark`, `happened_at`, `created_at`, `updated_at` FROM `ledger_records` WHERE `id` = ? AND `user_id` = ? LIMIT 1'
+        );
+        $statement->execute([$id, $userId]);
+        $record = $statement->fetch();
 
-        return null;
+        return is_array($record) ? $record : null;
     }
 
     /**
@@ -113,18 +144,13 @@ final class RecordModel
      */
     public function listByMonth(int $userId, string $month): array
     {
-        $this->load();
-        $start = strtotime($month . '-01 00:00:00');
-        $end = strtotime('+1 month', $start);
+        [$start, $end] = $this->monthRange($month);
+        $statement = $this->database()->prepare(
+            'SELECT `id`, `user_id`, `type`, `category_id`, `amount`, `remark`, `happened_at`, `created_at`, `updated_at` FROM `ledger_records` WHERE `user_id` = ? AND `happened_at` >= ? AND `happened_at` < ? ORDER BY `happened_at` DESC, `id` DESC'
+        );
+        $statement->execute([$userId, $start, $end]);
 
-        $items = array_values(array_filter($this->records, static function (array $record) use ($userId, $start, $end): bool {
-            return (int)$record['user_id'] === $userId
-                && (int)$record['happened_at'] >= $start
-                && (int)$record['happened_at'] < $end;
-        }));
-
-        usort($items, static fn(array $a, array $b): int => $b['happened_at'] <=> $a['happened_at']);
-        return $items;
+        return $statement->fetchAll();
     }
 
     /**
@@ -137,14 +163,14 @@ final class RecordModel
      */
     public function sumByMonthAndType(int $userId, string $month, int $type): int
     {
-        $sum = 0;
-        foreach ($this->listByMonth($userId, $month) as $record) {
-            if ((int)$record['type'] === $type) {
-                $sum += (int)$record['amount'];
-            }
-        }
+        [$start, $end] = $this->monthRange($month);
+        $statement = $this->database()->prepare(
+            'SELECT COALESCE(SUM(`amount`), 0) AS `total_amount` FROM `ledger_records` WHERE `user_id` = ? AND `happened_at` >= ? AND `happened_at` < ? AND `type` = ?'
+        );
+        $statement->execute([$userId, $start, $end, $type]);
+        $row = $statement->fetch();
 
-        return $sum;
+        return (int)($row['total_amount'] ?? 0);
     }
 
     /**
@@ -160,29 +186,41 @@ final class RecordModel
     }
 
     /**
-     * 从开发 JSON 存储加载记录数据。
+     * 查询用户最新一条记录的发生时间。
+     *
+     * @param int $userId 用户 ID。
+     * @return int 最新记录发生时间，未记录时返回 0。
      */
-    private function load(): void
+    public function latestHappenedAtByUser(int $userId): int
     {
-        if (!JsonStore::enabled()) {
-            return;
-        }
-        $this->records = JsonStore::read('records');
-        $meta = JsonStore::read('meta', ['next_record_id' => 1]);
-        $this->nextId = (int)($meta['next_record_id'] ?? (count($this->records) + 1));
+        $statement = $this->database()->prepare(
+            'SELECT COALESCE(MAX(`happened_at`), 0) AS `latest_happened_at` FROM `ledger_records` WHERE `user_id` = ?'
+        );
+        $statement->execute([$userId]);
+        $row = $statement->fetch();
+
+        return (int)($row['latest_happened_at'] ?? 0);
     }
 
     /**
-     * 保存记录数据到开发 JSON 存储。
+     * 获取记录数据库连接。
+     *
+     * @return object PDO 或测试注入的兼容对象。
      */
-    private function save(): void
+    private function database()
     {
-        if (!JsonStore::enabled()) {
-            return;
+        if ($this->pdo !== null) {
+            return $this->pdo;
         }
-        $meta = JsonStore::read('meta');
-        $meta['next_record_id'] = $this->nextId;
-        JsonStore::write('records', $this->records);
-        JsonStore::write('meta', $meta);
+
+        $this->pdo = Database::connection();
+        return $this->pdo;
+    }
+
+    private function monthRange(string $month): array
+    {
+        $timezone = new DateTimeZone('Asia/Shanghai');
+        $start = new DateTimeImmutable($month . '-01 00:00:00', $timezone);
+        return [$start->getTimestamp(), $start->modify('+1 month')->getTimestamp()];
     }
 }

@@ -1,0 +1,16 @@
+<view class="page">
+  <view class="top-bar">
+    <view class="top-action" bindtap="goBack">‹</view>
+    <view>预算管理</view>
+    <view class="top-action">···</view>
+  </view>
+
+  <view class="budget-card">
+    <view class="tape budget-tape"></view>
+    <view class="title">{{month}} 月总预算</view>
+    <view class="subtitle">给这个月的小钱包定一个温柔边界</view>
+    <input class="budget-input" type="digit" value="{{amount}}" bindinput="onAmountInput" placeholder="例如 1800.00" />
+    <view class="tip">首页会根据本月支出自动计算已用比例和剩余预算。</view>
+  </view>
+  <button class="save" bindtap="saveBudget" loading="{{saving}}">保存预算</button>
+</view>

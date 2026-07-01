@@ -78,6 +78,18 @@ final class RecordController extends BaseController
     }
 
     /**
+     * 获取当前用户最新有记录的月份。
+     */
+    public function latestMonth(): array
+    {
+        try {
+            return $this->success($this->logic->latestMonth($this->currentUserId()));
+        } catch (Throwable $exception) {
+            return $this->fail($exception);
+        }
+    }
+
+    /**
      * 获取一条账单详情。
      *
      * 从 GET query 逐个读取 id。

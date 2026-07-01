@@ -47,7 +47,7 @@ final class HomeLogic
             'remaining_amount' => $budgetAmount - $expense,
             'used_percent' => $budgetAmount > 0 ? min(999, (int)round($expense * 100 / $budgetAmount)) : 0,
             'recent_records' => $this->recordModel->recentByMonth($userId, $month, 5),
-            'categories' => $this->categoryModel->allActive(),
+            'categories' => $this->categoryModel->allActive($userId),
         ];
     }
 }

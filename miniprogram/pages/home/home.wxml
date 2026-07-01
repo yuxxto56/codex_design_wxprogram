@@ -1,0 +1,59 @@
+<view class="page home-page">
+  <view class="top-bar">
+    <view class="top-action">‹</view>
+    <view>萌萌记账</view>
+    <view class="top-action">···</view>
+  </view>
+
+  <view class="date">{{dateText}}</view>
+  <view class="hello">你好，太阳公公！</view>
+  <view class="cloud-shape">
+    <view></view>
+    <view></view>
+    <view></view>
+  </view>
+
+  <view class="summary-card">
+    <view class="tape summary-tape"></view>
+    <view class="summary-blob"></view>
+    <view class="summary-row">
+      <view>
+        <view class="label">总支出</view>
+        <view class="amount">{{expenseText}}</view>
+      </view>
+      <view class="right">
+        <view class="label">预算</view>
+        <view class="budget">{{budgetText}}</view>
+      </view>
+    </view>
+    <view class="progress-meta">
+      <text>已用 {{usedPercent}}%</text>
+      <text>剩余 {{remainingText}}</text>
+    </view>
+    <view class="progress-track">
+      <view class="progress-fill" style="width: {{progressWidth}}%;"></view>
+    </view>
+  </view>
+
+  <view class="section-title">
+    <view class="section-heading">
+      <text>最近的小确幸</text>
+      <text class="month-badge">{{recentMonthLabel}}</text>
+    </view>
+    <text class="link" bindtap="goBill">查看全部</text>
+  </view>
+  <view wx:if="{{recentRecords.length === 0}}" class="empty-card">
+    <view class="empty-icon">+</view>
+    <view>{{recentMonthLabel}}还没有记录，去记下第一笔吧。</view>
+  </view>
+  <view wx:for="{{recentRecords}}" wx:key="id" class="record-item {{index === 0 ? 'record-first' : ''}}">
+    <view class="record-icon" style="background: {{item.category_color}};">
+      <image class="record-icon-img" src="{{item.category_icon_path}}" mode="aspectFit" />
+    </view>
+    <view class="record-main">
+      <view class="record-title">{{item.remark || '未填写备注'}}</view>
+      <view class="record-sub">{{item.category_name || '分类'}}</view>
+    </view>
+    <view class="record-money">{{item.type === 1 ? '-' : '+'}}{{item.amount_text}}</view>
+  </view>
+</view>
